@@ -20,15 +20,38 @@ export default function Dashboard() {
       return;
     }
 
-    // Simulasi mendapatkan data user dari token
     try {
-      // Decode token sederhana (jika menggunakan JWT)
-      const tokenData = JSON.parse(atob(token.split('.')[1]));
-      setUser(tokenData);
+      // Cek jika token adalah JWT (mempunyai 3 bagian dengan titik)
+      if (token.split('.').length === 3) {
+        // Decode token JWT
+        const tokenData = JSON.parse(atob(token.split('.')[1]));
+        setUser(tokenData);
+      } else {
+        // Jika bukan JWT, gunakan data sederhana
+        setUser({
+          alamat_email: 'pengguna@example.com',
+          name: 'Pengguna'
+        });
+        
+        // Atau jika token berisi data JSON langsung
+        try {
+          const userData = JSON.parse(token);
+          setUser(userData);
+        } catch {
+          // Jika parsing gagal, gunakan default
+          setUser({
+            alamat_email: 'pengguna@bbpmp.com',
+            name: 'Pengguna BBPMP'
+          });
+        }
+      }
     } catch (error) {
       console.error('Error decoding token:', error);
-      localStorage.removeItem('token');
-      router.push('/');
+      // Fallback: tetap set user default meski decode gagal
+      setUser({
+        alamat_email: 'pengguna@bbpmp.com',
+        name: 'Pengguna BBPMP'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -39,7 +62,6 @@ export default function Dashboard() {
     router.push('/');
   };
 
-  // Tampilkan loading sederhana selama SSR
   if (!isClient || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
@@ -66,7 +88,7 @@ export default function Dashboard() {
                 />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Nyurat-We</h1>
+                <h1 className="text-xl font-bold text-gray-900">Nyurat-Keun</h1>
                 <p className="text-sm text-gray-600">Dashboard</p>
               </div>
             </div>
@@ -95,7 +117,7 @@ export default function Dashboard() {
         {/* Welcome Section */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-3xl p-8 text-white mb-8 shadow-2xl">
           <h2 className="text-3xl font-bold mb-4">
-            Selamat Datang di Nyurat-We! 🎉
+            Selamat Datang di Nyurat-Keun! 🎉
           </h2>
           <p className="text-blue-100 text-lg max-w-2xl">
             Platform pembelajaran digital inovatif untuk mendukung pendidikan berkualitas di Indonesia.

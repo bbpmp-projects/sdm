@@ -61,7 +61,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen flex bg-gradient-to-br from-slate-50 to-blue-50" suppressHydrationWarning>
       {/* Left Side - Background Image */}
       <div 
         className="hidden lg:flex lg:w-1/2 bg-cover bg-center bg-no-repeat relative"
@@ -89,10 +89,10 @@ export default function Login() {
               </div>
             </div>
             <h1 className="text-5xl font-bold mb-6 leading-tight">
-              Selamat Datang di <span className="text-blue-200 block">Nyurat-We</span>
+              Selamat Datang di <span className="text-blue-200 block">Nyurat-Keun</span>
             </h1>
             <p className="text-lg text-blue-100 leading-relaxed">
-              Platform pembelajaran digital yang inovatif untuk mendukung pendidikan berkualitas di Indonesia.
+              Platform penyuratan digital yang inovatif untuk mendukung pendidikan berkualitas di Indonesia.
             </p>
             
             {/* Feature List */}
@@ -147,7 +147,7 @@ export default function Login() {
                 Masuk ke Akun
               </h1>
               <p className="text-gray-600 mt-3 font-medium">
-                Silakan masuk untuk mengakses Nyurat-We
+                Silakan masuk untuk mengakses Nyurat-Keun
               </p>
             </div>
 
@@ -276,7 +276,7 @@ export default function Login() {
           {/* Footer */}
           <div className="text-center mt-8">
             <p className="text-gray-600 text-sm font-medium">
-              © 2024 BBPMP - Nyurat-We. All rights reserved.
+              © 2025 BBPMP - Nyurat-Keun. All rights reserved.
             </p>
           </div>
         </div>

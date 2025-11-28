@@ -114,8 +114,8 @@ export default function Verifikasi() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: email,
-          kode_verifikasi: kode
+          verification_code: kode,
+          alamat_email: email
         }),
       });
 
@@ -165,7 +165,9 @@ export default function Verifikasi() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ 
+          alamat_email: email 
+        }),
       });
 
       const data = await response.json();
@@ -321,7 +323,7 @@ export default function Verifikasi() {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-gray-600 text-sm font-medium">
-            © 2024 BBPMP - Nyurat-We. All rights reserved.
+            © 2025 BBPMP - Nyurat-Keun. All rights reserved.
           </p>
         </div>
       </div>

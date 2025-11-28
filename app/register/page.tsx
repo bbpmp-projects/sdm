@@ -346,7 +346,7 @@ export default function Register() {
               Daftar Akun Baru
             </h1>
             <p className="text-gray-600 mt-3 font-medium max-w-2xl mx-auto">
-              Lengkapi data diri Anda untuk bergabung dengan platform Nyurat-We
+              Lengkapi data diri Anda untuk bergabung dengan platform Nyurat-Keun
             </p>
           </div>
 
@@ -703,22 +703,9 @@ export default function Register() {
                       <a href="#" className="text-blue-600 hover:text-blue-800 font-medium transition-colors">
                         Kebijakan Privasi
                       </a>{' '}
-                      platform Nyurat-We
+                      platform Nyurat-Keun
                     </span>
                   </label>
-                </div>
-
-                {/* Resend Verification */}
-                <div className="flex justify-center">
-                  <button
-                    type="button"
-                    onClick={handleResendVerification}
-                    disabled={isLoading}
-                    className="w-full text-sm text-blue-600 hover:text-blue-800 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2 font-medium group border border-blue-200 hover:border-blue-300 px-4 py-3 rounded-xl bg-blue-50 hover:bg-blue-100"
-                  >
-                    <Mail className="w-4 h-4" />
-                    Kirim ulang email verifikasi
-                  </button>
                 </div>
               </div>
             </div>
@@ -774,7 +761,7 @@ export default function Register() {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-gray-600 text-sm font-medium">
-            © 2024 BBPMP - Nyurat-We. All rights reserved.
+            © 2025 BBPMP - Nyurat-Keun. All rights reserved.
           </p>
         </div>
       </div>
