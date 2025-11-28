@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Mail, Clock, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Phone, Clock, RotateCcw } from 'lucide-react';
 
 export default function Verifikasi() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [nomorHp, setNomorHp] = useState('');
   const [kodeVerifikasi, setKodeVerifikasi] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -18,13 +18,28 @@ export default function Verifikasi() {
   const API_BASE_URL = 'http://localhost:3000';
 
   useEffect(() => {
-    // Ambil email dari sessionStorage
-    const savedEmail = sessionStorage.getItem('verification_email');
-    if (savedEmail) {
-      setEmail(savedEmail);
+    // Ambil nomor HP dari sessionStorage
+    const savedNomorHp = sessionStorage.getItem('verification_nomor_hp');
+    if (savedNomorHp) {
+      setNomorHp(savedNomorHp);
     } else {
-      // Jika tidak ada email, redirect kembali ke register
+      // Jika tidak ada nomor HP, redirect kembali ke register
       router.push('/register');
+    }
+
+    // Cek dan pulihkan countdown dari localStorage
+    const savedCountdown = localStorage.getItem('verification_countdown');
+    if (savedCountdown) {
+      const countdownEndTime = parseInt(savedCountdown);
+      const now = Math.floor(Date.now() / 1000);
+      const remainingTime = countdownEndTime - now;
+      
+      if (remainingTime > 0) {
+        setCountdown(remainingTime);
+      } else {
+        // Hapus countdown yang sudah expired
+        localStorage.removeItem('verification_countdown');
+      }
     }
   }, [router]);
 
@@ -34,6 +49,16 @@ export default function Verifikasi() {
       timer = setTimeout(() => setCountdown(countdown - 1), 1000);
     }
     return () => clearTimeout(timer);
+  }, [countdown]);
+
+  // Simpan countdown ke localStorage setiap kali berubah
+  useEffect(() => {
+    if (countdown > 0) {
+      const countdownEndTime = Math.floor(Date.now() / 1000) + countdown;
+      localStorage.setItem('verification_countdown', countdownEndTime.toString());
+    } else {
+      localStorage.removeItem('verification_countdown');
+    }
   }, [countdown]);
 
   const focusNextInput = (index: number) => {
@@ -115,7 +140,7 @@ export default function Verifikasi() {
         },
         body: JSON.stringify({
           verification_code: kode,
-          alamat_email: email
+          nomor_hp: nomorHp
         }),
       });
 
@@ -124,8 +149,9 @@ export default function Verifikasi() {
       if (response.ok) {
         setMessage('🎉 Verifikasi berhasil! Mengarahkan ke dashboard...');
         
-        // Hapus email dari sessionStorage
-        sessionStorage.removeItem('verification_email');
+        // Hapus nomor HP dan countdown dari storage
+        sessionStorage.removeItem('verification_nomor_hp');
+        localStorage.removeItem('verification_countdown');
         
         // Simpan token atau data user ke localStorage/sessionStorage jika diperlukan
         if (data.token) {
@@ -166,14 +192,14 @@ export default function Verifikasi() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          alamat_email: email 
+          nomor_hp: nomorHp 
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setMessage('📧 Kode verifikasi baru telah dikirim ke email Anda');
+        setMessage('📧 Kode verifikasi baru telah dikirim ke WhatsApp Anda');
         setCountdown(60); // 60 detik countdown
       } else {
         setMessage(data.message || '❌ Gagal mengirim ulang kode verifikasi');
@@ -186,12 +212,12 @@ export default function Verifikasi() {
     }
   };
 
-  const maskEmail = (email: string) => {
-    const [localPart, domain] = email.split('@');
-    const maskedLocal = localPart.length > 2 
-      ? localPart.substring(0, 2) + '*'.repeat(localPart.length - 2)
-      : localPart;
-    return `${maskedLocal}@${domain}`;
+  const maskPhoneNumber = (phone: string) => {
+    if (phone.length <= 4) return phone;
+    
+    const visiblePart = phone.substring(0, 4);
+    const maskedPart = '*'.repeat(phone.length - 4);
+    return `${visiblePart}${maskedPart}`;
   };
 
   return (
@@ -218,16 +244,16 @@ export default function Verifikasi() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center shadow-lg border border-blue-200 mx-auto mb-4">
-              <Mail className="w-8 h-8 text-blue-600" />
+              <Phone className="w-8 h-8 text-blue-600" />
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-              Verifikasi Email
+              Verifikasi WhatsApp
             </h1>
             <p className="text-gray-600 mt-3 font-medium">
-              Kami telah mengirim kode verifikasi 6 digit ke
+              Kami telah mengirim kode verifikasi 6 digit ke WhatsApp
             </p>
             <p className="text-blue-600 font-semibold mt-1">
-              {maskEmail(email)}
+              +62 {maskPhoneNumber(nomorHp)}
             </p>
           </div>
 

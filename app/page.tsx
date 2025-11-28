@@ -2,14 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, User, Shield } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight, User, Shield, Phone } from 'lucide-react';
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loginType, setLoginType] = useState<'email' | 'whatsapp'>('email');
   const [formData, setFormData] = useState({
     alamat_email: '',
+    nomor_hp: '', // Tambah field untuk nomor HP
     password: '',
   });
 
@@ -28,16 +30,24 @@ export default function Login() {
     setIsLoading(true);
     setMessage('');
 
+    // Siapkan data berdasarkan tipe login
+    const requestData = loginType === 'email' 
+      ? {
+          alamat_email: formData.alamat_email,
+          password: formData.password
+        }
+      : {
+          nomor_hp: formData.nomor_hp,
+          password: formData.password
+        };
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          alamat_email: formData.alamat_email,
-          password: formData.password
-        }),
+        body: JSON.stringify(requestData),
       });
 
       const data = await response.json();
@@ -50,7 +60,7 @@ export default function Login() {
           window.location.href = '/dashboard';
         }, 2000);
       } else {
-        setMessage(data.message || '❌ Email atau password salah');
+        setMessage(data.message || '❌ Login gagal');
       }
     } catch (error) {
       setMessage('🔌 Koneksi ke server gagal');
@@ -58,6 +68,30 @@ export default function Login() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Fungsi untuk membersihkan input saat mengganti tipe login
+  const handleLoginTypeChange = (type: 'email' | 'whatsapp') => {
+    setLoginType(type);
+    setFormData(prev => ({ 
+      ...prev, 
+      alamat_email: type === 'whatsapp' ? '' : prev.alamat_email,
+      nomor_hp: type === 'email' ? '' : prev.nomor_hp
+    }));
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, ''); // Hanya angka
+    
+    // Format untuk display (0xxxxxxxxxx)
+    if (value.startsWith('62')) {
+      value = '0' + value.slice(2);
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      nomor_hp: value
+    }));
   };
 
   return (
@@ -151,29 +185,89 @@ export default function Login() {
               </p>
             </div>
 
+            {/* Login Type Selector */}
+            <div className="flex mb-6 bg-blue-50 rounded-xl p-1">
+              <button
+                type="button"
+                onClick={() => handleLoginTypeChange('email')}
+                className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all duration-300 ${
+                  loginType === 'email'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-blue-600'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  Email
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLoginTypeChange('whatsapp')}
+                className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all duration-300 ${
+                  loginType === 'whatsapp'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-blue-600'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  WhatsApp
+                </div>
+              </button>
+            </div>
+
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Input */}
-              <div className="space-y-3">
-                <label htmlFor="alamat_email" className="text-sm font-semibold text-gray-800">
-                  Alamat Email
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-transform duration-200 group-focus-within:scale-110">
-                    <Mail className="h-5 w-5 text-blue-500" />
+              {loginType === 'email' && (
+                <div className="space-y-3">
+                  <label htmlFor="alamat_email" className="text-sm font-semibold text-gray-800">
+                    Alamat Email
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-transform duration-200 group-focus-within:scale-110">
+                      <Mail className="h-5 w-5 text-blue-500" />
+                    </div>
+                    <input
+                      type="email"
+                      id="alamat_email"
+                      name="alamat_email"
+                      value={formData.alamat_email}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full pl-11 pr-4 py-3.5 bg-white/70 border-2 border-blue-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500 shadow-sm text-gray-900 font-medium hover:border-blue-300 focus:bg-white"
+                      placeholder="masukkan@gmail.com"
+                    />
                   </div>
-                  <input
-                    type="email"
-                    id="alamat_email"
-                    name="alamat_email"
-                    value={formData.alamat_email}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full pl-11 pr-4 py-3.5 bg-white/70 border-2 border-blue-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500 shadow-sm text-gray-900 font-medium hover:border-blue-300 focus:bg-white"
-                    placeholder="masukkan@email.com"
-                  />
                 </div>
-              </div>
+              )}
+
+              {/* WhatsApp Input */}
+              {loginType === 'whatsapp' && (
+                <div className="space-y-3">
+                  <label htmlFor="nomor_hp" className="text-sm font-semibold text-gray-800">
+                    Nomor WhatsApp
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-transform duration-200 group-focus-within:scale-110">
+                      <Phone className="h-5 w-5 text-blue-500" />
+                    </div>
+                    <input
+                      type="tel"
+                      id="nomor_hp"
+                      name="nomor_hp"
+                      value={formData.nomor_hp}
+                      onChange={handlePhoneChange}
+                      required
+                      className="w-full pl-11 pr-4 py-3.5 bg-white/70 border-2 border-blue-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500 shadow-sm text-gray-900 font-medium hover:border-blue-300 focus:bg-white"
+                      placeholder="Masukkan Nomor"
+                      pattern="08[0-9]{8,11}"
+                      maxLength={13}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Password Input */}
               <div className="space-y-3">
@@ -210,15 +304,15 @@ export default function Login() {
 
               {/* Remember Me & Forgot Password */}
               <div className="flex items-center justify-between">
-                <label className="flex items-center group cursor-pointer">
-                  <div className="relative">
+                {/* Checkbox dengan gaya yang sama seperti di register */}
+                <label className="flex items-start space-x-3 cursor-pointer">
+                  <div className="relative mt-1">
                     <input
                       type="checkbox"
-                      className="w-5 h-5 text-blue-600 bg-white border-2 border-blue-300 rounded-lg focus:ring-blue-500 focus:ring-2 transition-all duration-200 peer"
+                      className="w-5 h-5 text-blue-600 bg-white border-2 border-blue-300 rounded focus:ring-blue-500 focus:ring-2 transition-all duration-200"
                     />
-                    <div className="absolute inset-0 rounded-lg bg-blue-600 scale-0 peer-checked:scale-100 transition-transform duration-200"></div>
                   </div>
-                  <span className="ml-3 text-sm text-gray-700 font-medium group-hover:text-gray-900 transition-colors">
+                  <span className="text-sm text-gray-700 leading-relaxed font-medium">
                     Ingat saya
                   </span>
                 </label>

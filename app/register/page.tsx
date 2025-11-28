@@ -224,8 +224,8 @@ export default function Register() {
       if (response.ok) {
         setMessage('🎉 Registrasi berhasil! Mengarahkan ke halaman verifikasi...');
         
-        // Simpan email ke sessionStorage untuk digunakan di halaman verifikasi
-        sessionStorage.setItem('verification_email', formData.alamat_email);
+        // Simpan nomor HP ke sessionStorage untuk digunakan di halaman verifikasi WhatsApp
+        sessionStorage.setItem('verification_nomor_hp', formData.nomor_hp);
         
         // Redirect ke halaman verifikasi setelah 2 detik
         setTimeout(() => {
@@ -241,6 +241,8 @@ export default function Register() {
             setMessage('❌ Email sudah terdaftar');
           } else if (data.message.includes('nomor_ktp_nisn')) {
             setMessage('❌ Nomor KTP/NISN sudah terdaftar');
+          } else if (data.message.includes('nomor_hp')) {
+            setMessage('❌ Nomor HP sudah terdaftar');
           }
         }
 
@@ -427,7 +429,7 @@ export default function Register() {
                     {/* Nomor HP */}
                     <div className="space-y-2">
                       <label htmlFor="nomor_hp" className="text-sm font-medium text-gray-700">
-                        Nomor HP *
+                        Nomor HP (WhatsApp) *
                       </label>
                       <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -460,6 +462,9 @@ export default function Register() {
                           </p>
                         )}
                       </div>
+                      <p className="text-xs text-blue-600 font-medium">
+                        📱 Kode verifikasi akan dikirim ke nomor WhatsApp ini
+                      </p>
                     </div>
 
                     {/* Email */}
