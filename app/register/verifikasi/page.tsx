@@ -147,7 +147,7 @@ export default function Verifikasi() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage('🎉 Verifikasi berhasil! Mengarahkan ke dashboard...');
+        setMessage('🎉 Verifikasi berhasil! Mengarahkan ke halaman Login...');
         
         // Hapus nomor HP dan countdown dari storage
         sessionStorage.removeItem('verification_nomor_hp');
