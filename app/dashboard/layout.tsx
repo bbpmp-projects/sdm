@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Dashboard - Nyurat-We",
+  title: "Dashboard - Nyurat-Keun",
   description: "Dashboard platform pembelajaran digital Nyurat-We",
 };
 

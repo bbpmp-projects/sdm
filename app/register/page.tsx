@@ -4,11 +4,12 @@ import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Mail, Lock, User, Phone, IdCard, Building, MapPin, ArrowRight, ArrowLeft } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Register() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showKonfirmasiPassword, setShowKonfirmasiPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -190,12 +191,11 @@ export default function Register() {
     e.preventDefault();
     
     if (!validateForm()) {
-      setMessage('❌ Harap perbaiki error pada form sebelum submit');
+      toast.error('❌ Harap perbaiki error pada form sebelum submit');
       return;
     }
 
     setIsLoading(true);
-    setMessage('');
 
     try {
       const payload = {
@@ -222,7 +222,7 @@ export default function Register() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage('🎉 Registrasi berhasil! Mengarahkan ke halaman verifikasi...');
+        toast.success('🎉 Registrasi berhasil! Mengarahkan ke halaman verifikasi...');
         
         // Simpan nomor HP ke sessionStorage untuk digunakan di halaman verifikasi WhatsApp
         sessionStorage.setItem('verification_nomor_hp', formData.nomor_hp);
@@ -233,25 +233,26 @@ export default function Register() {
         }, 2000);
         
       } else {
-        const errorMessage = data.message || data.error || '❌ Gagal melakukan registrasi';
-        setMessage(errorMessage);
+        let errorMessage = data.message || data.error || '❌ Gagal melakukan registrasi';
         
         if (data.message?.includes('duplicate') || data.message?.includes('sudah ada')) {
           if (data.message.includes('alamat_email')) {
-            setMessage('❌ Email sudah terdaftar');
+            errorMessage = '❌ Email sudah terdaftar';
           } else if (data.message.includes('nomor_ktp_nisn')) {
-            setMessage('❌ Nomor KTP/NISN sudah terdaftar');
+            errorMessage = '❌ Nomor KTP/NISN sudah terdaftar';
           } else if (data.message.includes('nomor_hp')) {
-            setMessage('❌ Nomor HP sudah terdaftar');
+            errorMessage = '❌ Nomor HP sudah terdaftar';
           }
         }
 
         if (data.errors && data.errors.length > 0) {
-          setMessage(`❌ ${data.errors.join(', ')}`);
+          errorMessage = `❌ ${data.errors.join(', ')}`;
         }
+
+        toast.error(errorMessage);
       }
     } catch (error) {
-      setMessage('🔌 Koneksi ke server gagal. Periksa koneksi internet Anda.');
+      toast.error('🔌 Koneksi ke server gagal. Periksa koneksi internet Anda.');
     } finally {
       setIsLoading(false);
     }
@@ -259,7 +260,7 @@ export default function Register() {
 
   const handleResendVerification = async () => {
     if (!formData.alamat_email) {
-      setMessage('❌ Masukkan email terlebih dahulu');
+      toast.error('❌ Masukkan email terlebih dahulu');
       return;
     }
 
@@ -275,12 +276,12 @@ export default function Register() {
 
       const data = await response.json();
       if (response.ok) {
-        setMessage('📧 Email verifikasi telah dikirim ulang');
+        toast.success('📧 Email verifikasi telah dikirim ulang');
       } else {
-        setMessage(data.message || '❌ Gagal mengirim ulang verifikasi');
+        toast.error(data.message || '❌ Gagal mengirim ulang verifikasi');
       }
     } catch (error) {
-      setMessage('🔌 Koneksi ke server gagal');
+      toast.error('🔌 Koneksi ke server gagal');
     } finally {
       setIsLoading(false);
     }
@@ -309,6 +310,22 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center p-4">
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        toastClassName="rounded-xl shadow-lg"
+        bodyClassName="font-medium"
+      />
+
       {/* Background Decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
@@ -714,17 +731,6 @@ export default function Register() {
                 </div>
               </div>
             </div>
-
-            {/* Message */}
-            {message && (
-              <div className={`p-4 rounded-xl text-sm font-medium transform transition-all duration-300 ${
-                message.includes('berhasil') || message.includes('🎉') || message.includes('📧')
-                  ? 'bg-green-50 text-green-800 border border-green-200'
-                  : 'bg-red-50 text-red-800 border border-red-200'
-              }`}>
-                {message}
-              </div>
-            )}
 
             {/* Submit Button */}
             <div className="flex justify-center pt-4">

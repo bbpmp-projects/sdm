@@ -1,51 +1,90 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, User, Shield, Phone } from 'lucide-react';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  ArrowRight,
+  User,
+  Shield,
+  Phone,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loginType, setLoginType] = useState<'email' | 'whatsapp'>('email');
+  const [loginType, setLoginType] = useState<"email" | "whatsapp">("email");
   const [formData, setFormData] = useState({
-    alamat_email: '',
-    nomor_hp: '', // Tambah field untuk nomor HP
-    password: '',
+    alamat_email: "",
+    nomor_hp: "", // Tambah field untuk nomor HP
+    password: "",
   });
 
-  const API_BASE_URL = 'http://localhost:3000';
+  const router = useRouter();
+  const API_BASE_URL = "http://localhost:3000";
+
+  // Redirect jika sudah login
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      router.push('/dashboard');
+    }
+  }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage('');
+
+    // Validasi input
+    if (loginType === "email" && !formData.alamat_email) {
+      toast.error("❌ Harap masukkan alamat email");
+      setIsLoading(false);
+      return;
+    }
+
+    if (loginType === "whatsapp" && !formData.nomor_hp) {
+      toast.error("❌ Harap masukkan nomor WhatsApp");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.password) {
+      toast.error("❌ Harap masukkan password");
+      setIsLoading(false);
+      return;
+    }
 
     // Siapkan data berdasarkan tipe login
-    const requestData = loginType === 'email' 
-      ? {
-          alamat_email: formData.alamat_email,
-          password: formData.password
-        }
-      : {
-          nomor_hp: formData.nomor_hp,
-          password: formData.password
-        };
+    const requestData =
+      loginType === "email"
+        ? {
+            alamat_email: formData.alamat_email,
+            password: formData.password,
+          }
+        : {
+            nomor_hp: formData.nomor_hp,
+            password: formData.password,
+          };
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(requestData),
       });
@@ -53,82 +92,105 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage('🎉 Login berhasil! Mengalihkan...');
-        localStorage.setItem('token', data.token);
+        toast.success("🎉 Login berhasil! Mengalihkan...");
+        localStorage.setItem("token", data.token);
         // Redirect ke dashboard setelah 2 detik
         setTimeout(() => {
-          window.location.href = '/dashboard';
+          window.location.href = "/dashboard";
         }, 2000);
       } else {
-        setMessage(data.message || '❌ Login gagal');
+        toast.error(data.message || "❌ Login gagal");
       }
     } catch (error) {
-      setMessage('🔌 Koneksi ke server gagal');
-      console.error('Error:', error);
+      toast.error("🔌 Koneksi ke server gagal");
+      console.error("Error:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   // Fungsi untuk membersihkan input saat mengganti tipe login
-  const handleLoginTypeChange = (type: 'email' | 'whatsapp') => {
+  const handleLoginTypeChange = (type: "email" | "whatsapp") => {
     setLoginType(type);
-    setFormData(prev => ({ 
-      ...prev, 
-      alamat_email: type === 'whatsapp' ? '' : prev.alamat_email,
-      nomor_hp: type === 'email' ? '' : prev.nomor_hp
+    setFormData((prev) => ({
+      ...prev,
+      alamat_email: type === "whatsapp" ? "" : prev.alamat_email,
+      nomor_hp: type === "email" ? "" : prev.nomor_hp,
     }));
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, ''); // Hanya angka
-    
+    let value = e.target.value.replace(/\D/g, ""); // Hanya angka
+
     // Format untuk display (0xxxxxxxxxx)
-    if (value.startsWith('62')) {
-      value = '0' + value.slice(2);
+    if (value.startsWith("62")) {
+      value = "0" + value.slice(2);
     }
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      nomor_hp: value
+      nomor_hp: value,
     }));
   };
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-slate-50 to-blue-50" suppressHydrationWarning>
+    <div
+      className="min-h-screen flex bg-gradient-to-br from-slate-50 to-blue-50"
+      suppressHydrationWarning
+    >
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        toastClassName="rounded-xl shadow-lg"
+        bodyClassName="font-medium"
+      />
+
       {/* Left Side - Background Image */}
-      <div 
+      <div
         className="hidden lg:flex lg:w-1/2 bg-cover bg-center bg-no-repeat relative"
         style={{
-          backgroundImage: 'url(/bg_aula.png)',
+          backgroundImage: "url(/bg_aula.png)",
         }}
       >
         {/* Overlay gradient untuk teks */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 to-blue-700/60"></div>
-        
+
         {/* Welcome Text - Posisi dinaikan ke atas */}
         <div className="relative z-10 flex flex-col justify-start p-12 text-white mt-16">
           <div className="max-w-md">
             <div className="flex items-center gap-4 mb-8">
               <div className="w-28 h-28 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-2xl border border-white/20">
-                <img 
-                  src="/logo_bbpmp.png" 
-                  alt="BBPMP Logo" 
+                <img
+                  src="/logo_bbpmp.png"
+                  alt="BBPMP Logo"
                   className="w-20 h-20 object-contain"
                 />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white">BBPMP</h2>
-                <p className="text-blue-100 text-sm font-medium">Balai Besar Penjamin Mutu Pendidikan Provinsi Jawa Barat</p>
+                <p className="text-blue-100 text-sm font-medium">
+                  Balai Besar Penjamin Mutu Pendidikan Provinsi Jawa Barat
+                </p>
               </div>
             </div>
             <h1 className="text-5xl font-bold mb-6 leading-tight">
-              Selamat Datang di <span className="text-blue-200 block">Nyurat-Keun</span>
+              Selamat Datang di{" "}
+              <span className="text-blue-200 block">Nyurat-Keun</span>
             </h1>
             <p className="text-lg text-blue-100 leading-relaxed">
-              Platform penyuratan digital yang inovatif untuk mendukung pendidikan berkualitas di Indonesia.
+              Platform penyuratan digital yang inovatif untuk mendukung
+              pendidikan berkualitas di Indonesia.
             </p>
-            
+
             {/* Feature List */}
             <div className="mt-8 space-y-4">
               <div className="flex items-center gap-3">
@@ -161,9 +223,9 @@ export default function Login() {
           {/* Mobile Logo - YANG DIPERBESAR */}
           <div className="lg:hidden flex justify-center mb-8">
             <div className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center shadow-2xl border border-blue-100">
-              <img 
-                src="/logo_bbpmp.png" 
-                alt="BBPMP Logo" 
+              <img
+                src="/logo_bbpmp.png"
+                alt="BBPMP Logo"
                 className="w-16 h-16 object-contain"
               />
             </div>
@@ -175,7 +237,9 @@ export default function Login() {
             <div className="text-center mb-8">
               <div className="lg:hidden mb-4">
                 <h2 className="text-xl font-bold text-gray-800">BBPMP</h2>
-                <p className="text-gray-600 text-sm">Balai Besar Pengembangan Media Pendidikan</p>
+                <p className="text-gray-600 text-sm">
+                  Balai Besar Pengembangan Media Pendidikan
+                </p>
               </div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
                 Masuk ke Akun
@@ -189,11 +253,11 @@ export default function Login() {
             <div className="flex mb-6 bg-blue-50 rounded-xl p-1">
               <button
                 type="button"
-                onClick={() => handleLoginTypeChange('email')}
+                onClick={() => handleLoginTypeChange("email")}
                 className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all duration-300 ${
-                  loginType === 'email'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-blue-600'
+                  loginType === "email"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-600 hover:text-blue-600"
                 }`}
               >
                 <div className="flex items-center justify-center gap-2">
@@ -203,11 +267,11 @@ export default function Login() {
               </button>
               <button
                 type="button"
-                onClick={() => handleLoginTypeChange('whatsapp')}
+                onClick={() => handleLoginTypeChange("whatsapp")}
                 className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all duration-300 ${
-                  loginType === 'whatsapp'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-blue-600'
+                  loginType === "whatsapp"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-600 hover:text-blue-600"
                 }`}
               >
                 <div className="flex items-center justify-center gap-2">
@@ -220,9 +284,12 @@ export default function Login() {
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Input */}
-              {loginType === 'email' && (
+              {loginType === "email" && (
                 <div className="space-y-3">
-                  <label htmlFor="alamat_email" className="text-sm font-semibold text-gray-800">
+                  <label
+                    htmlFor="alamat_email"
+                    className="text-sm font-semibold text-gray-800"
+                  >
                     Alamat Email
                   </label>
                   <div className="relative group">
@@ -237,16 +304,19 @@ export default function Login() {
                       onChange={handleInputChange}
                       required
                       className="w-full pl-11 pr-4 py-3.5 bg-white/70 border-2 border-blue-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500 shadow-sm text-gray-900 font-medium hover:border-blue-300 focus:bg-white"
-                      placeholder="masukkan@gmail.com"
+                      placeholder="Masukkan@gmail.com"
                     />
                   </div>
                 </div>
               )}
 
               {/* WhatsApp Input */}
-              {loginType === 'whatsapp' && (
+              {loginType === "whatsapp" && (
                 <div className="space-y-3">
-                  <label htmlFor="nomor_hp" className="text-sm font-semibold text-gray-800">
+                  <label
+                    htmlFor="nomor_hp"
+                    className="text-sm font-semibold text-gray-800"
+                  >
                     Nomor WhatsApp
                   </label>
                   <div className="relative group">
@@ -271,7 +341,10 @@ export default function Login() {
 
               {/* Password Input */}
               <div className="space-y-3">
-                <label htmlFor="password" className="text-sm font-semibold text-gray-800">
+                <label
+                  htmlFor="password"
+                  className="text-sm font-semibold text-gray-800"
+                >
                   Password
                 </label>
                 <div className="relative group">
@@ -316,21 +389,13 @@ export default function Login() {
                     Ingat saya
                   </span>
                 </label>
-                <a href="#" className="text-sm text-blue-600 hover:text-blue-800 transition-all duration-200 font-semibold hover:underline">
+                <Link
+                  href="/lupapassword"
+                  className="text-sm text-blue-600 hover:text-blue-800 transition-all duration-200 font-semibold hover:underline"
+                >
                   Lupa password?
-                </a>
+                </Link>
               </div>
-
-              {/* Message */}
-              {message && (
-                <div className={`p-4 rounded-xl text-sm font-semibold transform transition-all duration-300 ${
-                  message.includes('berhasil') || message.includes('🎉')
-                    ? 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-800 border-2 border-green-200'
-                    : 'bg-gradient-to-r from-red-50 to-orange-50 text-red-800 border-2 border-red-200'
-                }`}>
-                  {message}
-                </div>
-              )}
 
               {/* Submit Button */}
               <button
@@ -355,9 +420,9 @@ export default function Login() {
             {/* Register Link */}
             <div className="mt-8 text-center pt-6 border-t border-blue-100/50">
               <p className="text-gray-700 font-medium">
-                Belum punya akun?{' '}
-                <Link 
-                  href="/register" 
+                Belum punya akun?{" "}
+                <Link
+                  href="/register"
                   className="text-blue-600 hover:text-blue-800 font-semibold transition-all duration-200 inline-flex items-center gap-2 group hover:gap-3"
                 >
                   Daftar di sini
