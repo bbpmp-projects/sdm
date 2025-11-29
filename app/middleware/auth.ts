@@ -1,25 +1,28 @@
 // app/middleware/auth.ts
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-
-export function middleware(request: NextRequest) {
-  // Cek token di localStorage tidak bisa di middleware, jadi kita handle di client side
-  // Middleware ini untuk proteksi route dasar
-  const token = request.cookies.get('token')?.value
+export const isAuthenticated = (): boolean => {
+  if (typeof window === 'undefined') return false;
   
-  // Jika tidak ada token dan mencoba akses dashboard, redirect ke login
-  if (!token && request.nextUrl.pathname.startsWith('/dashboard')) {
-    return NextResponse.redirect(new URL('/', request.url))
+  const token = localStorage.getItem('token');
+  if (!token) return false;
+
+  try {
+    // Validasi token JWT (jika menggunakan JWT)
+    if (token.split('.').length === 3) {
+      const tokenData = JSON.parse(atob(token.split('.')[1]));
+      // Cek expiry token
+      if (tokenData.exp && tokenData.exp * 1000 < Date.now()) {
+        localStorage.removeItem('token');
+        return false;
+      }
+    }
+    return true;
+  } catch {
+    localStorage.removeItem('token');
+    return false;
   }
+};
 
-  // Jika ada token dan mencoba akses login/register, redirect ke dashboard
-  if (token && (request.nextUrl.pathname === '/' || request.nextUrl.pathname === '/register')) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
-  }
-
-  return NextResponse.next()
-}
-
-export const config = {
-  matcher: ['/', '/dashboard', '/register']
-}
+export const getToken = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('token');
+};
