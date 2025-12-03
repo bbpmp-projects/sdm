@@ -13,11 +13,13 @@ import {
   BookOpen, 
   BarChart, 
   Clock, 
-  Award, 
-  Mail, 
-  CheckCircle,
+  Calendar,
+  Target,
+  Mail,
   User as UserIcon,
-  Home
+  Home,
+  Briefcase,
+  ClipboardList
 } from 'lucide-react';
 
 // Interface untuk data pegawai
@@ -105,33 +107,6 @@ export default function Dashboard() {
     return pegawaiData.filter(pegawai => pegawai.status === 'aktif').length;
   };
 
-  // Fungsi untuk menghitung distribusi golongan
-  const getGolonganDistribution = () => {
-    const golonganCounts: { [key: string]: number } = {
-      'IV': 0,
-      'III': 0,
-      'II': 0,
-      'I': 0
-    };
-    
-    pegawaiData.forEach(pegawai => {
-      const gol = pegawai.golongan?.charAt(0);
-      if (gol && ['I', 'II', 'III', 'IV'].includes(gol)) {
-        if (gol === 'I') {
-          golonganCounts['I']++;
-        } else if (gol === 'II') {
-          golonganCounts['II']++;
-        } else if (gol === 'III') {
-          golonganCounts['III']++;
-        } else if (gol === 'IV') {
-          golonganCounts['IV']++;
-        }
-      }
-    });
-    
-    return golonganCounts;
-  };
-
   // Auth dan inisialisasi user
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -186,8 +161,6 @@ export default function Dashboard() {
     );
   }
 
-  // Hitung distribusi golongan
-  const golonganDist = getGolonganDistribution();
   const totalAktif = countAktifPegawai();
 
   return (
@@ -221,11 +194,11 @@ export default function Dashboard() {
           </div>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {/* Data Pegawai Card - Klik untuk melihat data pegawai */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {/* Data Pegawai Card */}
             <div 
               onClick={() => router.push('/dashboard/data-pegawai')}
-              className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group relative z-10"
+              className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group"
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -256,256 +229,102 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Surat Masuk Card */}
-            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Surat Masuk</p>
-                  <div className="text-2xl font-bold text-gray-900">124</div>
-                </div>
-                <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
-                <span>12 belum diproses</span>
-              </div>
-            </div>
-
-            {/* Surat Keluar Card */}
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Surat Keluar</p>
-                  <div className="text-2xl font-bold text-gray-900">89</div>
-                </div>
-                <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Clock className="w-4 h-4 text-purple-600 mr-2" />
-                <span>3 dalam proses</span>
-              </div>
-            </div>
-
-            {/* Aktivitas Pegawai Card */}
+            {/* Kegiatan Pegawai Card */}
             <div 
-              onClick={() => router.push('/dashboard/aktivitas')}
-              className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6 border border-orange-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group"
+              onClick={() => router.push('/dashboard/kegiatan-pegawai')}
+              className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group"
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Aktivitas</p>
-                  <div className="text-2xl font-bold text-gray-900">267</div>
+                  <p className="text-sm text-gray-600 mb-1">Kegiatan Pegawai</p>
+                  <div className="text-2xl font-bold text-gray-900">42</div>
                 </div>
-                <div className="w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Activity className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <ClipboardList className="w-6 h-6 text-white" />
                 </div>
               </div>
               <div className="flex items-center text-sm text-gray-600">
-                <BarChart className="w-4 h-4 text-orange-600 mr-2" />
-                <span>Aktif hari ini</span>
+                <Calendar className="w-4 h-4 text-green-600 mr-2" />
+                <span>15 kegiatan bulan ini</span>
+              </div>
+              <div className="mt-4">
+                <button className="text-green-600 hover:text-green-800 text-sm font-medium">
+                  Kelola Kegiatan →
+                </button>
+              </div>
+            </div>
+
+            {/* Surat Kegiatan Card */}
+            <div 
+              onClick={() => router.push('/dashboard/surat-kegiatan')}
+              className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Surat Kegiatan</p>
+                  <div className="text-2xl font-bold text-gray-900">28</div>
+                </div>
+                <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Briefcase className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <FileText className="w-4 h-4 text-purple-600 mr-2" />
+                <span>5 surat menunggu</span>
+              </div>
+              <div className="mt-4">
+                <button className="text-purple-600 hover:text-purple-800 text-sm font-medium">
+                  Lihat Surat →
+                </button>
               </div>
             </div>
           </div>
 
-          {/* Quick Actions */}
+          {/* Fitur Utama Section */}
           <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Akses Cepat</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-6">Fitur Utama</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Tombol Kegiatan Pegawai */}
               <button
-                onClick={() => router.push('/dashboard/buat-surat')}
-                className="flex items-center gap-4 p-5 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-xl border border-blue-200 transition-all duration-200 group"
-              >
-                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <FileText className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-left">
-                  <div className="font-bold text-gray-900">Buat Surat Baru</div>
-                  <div className="text-sm text-gray-600">Buat surat resmi baru</div>
-                </div>
-              </button>
-
-              <button
-                onClick={() => router.push('/dashboard/data-pegawai')}
+                onClick={() => router.push('/dashboard/kegiatan-pegawai')}
                 className="flex items-center gap-4 p-5 bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 rounded-xl border border-green-200 transition-all duration-200 group"
               >
-                <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Users className="w-6 h-6 text-white" />
+                <div className="w-14 h-14 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <ClipboardList className="w-7 h-7 text-white" />
                 </div>
-                <div className="text-left">
-                  <div className="font-bold text-gray-900">Kelola Pegawai</div>
-                  <div className="text-sm text-gray-600">Lihat & kelola data pegawai</div>
+                <div className="text-left flex-1">
+                  <div className="font-bold text-gray-900 text-lg">Kelola Kegiatan Pegawai</div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    Pantau dan kelola semua kegiatan, tugas, dan pencapaian pegawai di satu tempat
+                  </div>
+                </div>
+                <div className="text-green-600 group-hover:translate-x-2 transition-transform">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
               </button>
 
+              {/* Tombol Surat Kegiatan */}
               <button
-                onClick={() => router.push('/dashboard/aktivitas')}
+                onClick={() => router.push('/dashboard/surat-kegiatan')}
                 className="flex items-center gap-4 p-5 bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-xl border border-purple-200 transition-all duration-200 group"
               >
-                <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Activity className="w-6 h-6 text-white" />
+                <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Briefcase className="w-7 h-7 text-white" />
                 </div>
-                <div className="text-left">
-                  <div className="font-bold text-gray-900">Monitoring Aktivitas</div>
-                  <div className="text-sm text-gray-600">Pantau aktivitas pegawai</div>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 mb-8">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Aktivitas Terbaru</h3>
-              <button 
-                onClick={() => router.push('/dashboard/aktivitas')}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                Lihat Semua →
-              </button>
-            </div>
-            <div className="space-y-4">
-              {[
-                { 
-                  activity: 'Surat undangan rapat telah dibuat oleh Andi Pratama', 
-                  time: '2 jam lalu',
-                  type: 'surat',
-                  user: 'Andi Pratama'
-                },
-                { 
-                  activity: `Data pegawai: ${totalPegawai} pegawai terdata dalam sistem`, 
-                  time: 'Baru saja',
-                  type: 'pegawai',
-                  user: 'System'
-                },
-                { 
-                  activity: 'Laporan bulanan telah diselesaikan', 
-                  time: '1 hari lalu',
-                  type: 'laporan',
-                  user: 'Siti Rahayu'
-                },
-                { 
-                  activity: '3 surat masuk baru perlu diproses', 
-                  time: '1 hari lalu',
-                  type: 'surat',
-                  user: 'System'
-                },
-                { 
-                  activity: `Pegawai aktif: ${totalAktif} dari ${totalPegawai} total pegawai`, 
-                  time: 'Baru saja',
-                  type: 'pegawai',
-                  user: 'System'
-                },
-              ].map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      item.type === 'surat' ? 'bg-blue-100 text-blue-600' :
-                      item.type === 'pegawai' ? 'bg-green-100 text-green-600' :
-                      'bg-purple-100 text-purple-600'
-                    }`}>
-                      {item.type === 'surat' && <FileText className="w-5 h-5" />}
-                      {item.type === 'pegawai' && <Users className="w-5 h-5" />}
-                      {item.type === 'laporan' && <Activity className="w-5 h-5" />}
-                    </div>
-                    <div>
-                      <div className="text-gray-800 font-medium">{item.activity}</div>
-                      <div className="flex items-center gap-3 mt-1">
-                        <div className="flex items-center gap-1">
-                          <UserIcon className="w-3 h-3 text-gray-500" />
-                          <span className="text-xs text-gray-600">{item.user}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-gray-500" />
-                          <span className="text-xs text-gray-600">{item.time}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-sm text-gray-600">{item.time}</span>
+                <div className="text-left flex-1">
+                  <div className="font-bold text-gray-900 text-lg">Surat Kegiatan</div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    Buat, kelola, dan pantau semua surat yang berkaitan dengan kegiatan organisasi
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Golongan Pegawai Overview */}
-          <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Distribusi Golongan Pegawai</h3>
-              <button
-                onClick={() => router.push('/dashboard/data-pegawai')}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                Lihat Detail →
-              </button>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { golongan: 'Golongan IV', count: golonganDist['IV'], color: 'from-blue-600 to-blue-800' },
-                { golongan: 'Golongan III', count: golonganDist['III'], color: 'from-green-600 to-green-800' },
-                { golongan: 'Golongan II', count: golonganDist['II'], color: 'from-purple-600 to-purple-800' },
-                { golongan: 'Golongan I', count: golonganDist['I'], color: 'from-orange-600 to-orange-800' },
-              ].map((item, index) => (
-                <div 
-                  key={index} 
-                  onClick={() => router.push('/dashboard/data-pegawai')}
-                  className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className={`w-12 h-12 bg-gradient-to-r ${item.color} rounded-lg flex items-center justify-center`}>
-                      <Award className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-gray-900">
-                        {isLoadingPegawai ? '-' : item.count}
-                      </div>
-                      <div className="text-xs text-gray-600">orang</div>
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <div className="font-bold text-gray-900">{item.golongan}</div>
-                    <div className="text-xs text-gray-500 mt-1">Klik untuk lihat detail</div>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full bg-gradient-to-r ${item.color}`}
-                      style={{ width: totalPegawai > 0 ? `${(item.count / totalPegawai) * 100}%` : '0%' }}
-                    />
-                  </div>
+                <div className="text-purple-600 group-hover:translate-x-2 transition-transform">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Bottom Navigation */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => window.location.reload()}
-                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900"
-              >
-                <Home className="w-4 h-4" />
-                Dashboard Utama
               </button>
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => router.push('/dashboard/data-pegawai')}
-                  className="px-6 py-2 text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Data Pegawai
-                </button>
-                <button
-                  onClick={() => router.push('/dashboard/buat-surat')}
-                  className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-medium transition-all"
-                >
-                  Buat Surat Baru
-                </button>
-              </div>
             </div>
           </div>
         </main>
