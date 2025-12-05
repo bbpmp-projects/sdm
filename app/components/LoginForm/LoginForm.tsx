@@ -16,12 +16,12 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginType, setLoginType] = useState<"email" | "whatsapp">("email");
   const [formData, setFormData] = useState({
-    alamat_email: "",
+    email: "",
     nomor_hp: "",
     password: "",
   });
 
-  const API_BASE_URL = "http://localhost:3000";
+  const API_BASE_URL = "http://10.12.192.203:3001";
 
   const handleInputChange = (name: string, value: string) => {
     setFormData((prev) => ({
@@ -31,9 +31,8 @@ export default function LoginForm() {
   };
 
   const handlePhoneChange = (value: string) => {
-    let formattedValue = value.replace(/\D/g, ""); // Hanya angka
+    let formattedValue = value.replace(/\D/g, "");
 
-    // Format untuk display (0xxxxxxxxxx)
     if (formattedValue.startsWith("62")) {
       formattedValue = "0" + formattedValue.slice(2);
     }
@@ -48,17 +47,33 @@ export default function LoginForm() {
     setLoginType(type);
     setFormData((prev) => ({
       ...prev,
-      alamat_email: type === "whatsapp" ? "" : prev.alamat_email,
+      email: type === "whatsapp" ? "" : prev.email,
       nomor_hp: type === "email" ? "" : prev.nomor_hp,
     }));
+  };
+
+  // Fungsi untuk menyimpan token dengan validasi
+  const saveTokenToStorage = (token: string) => {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', token);
+        console.log('Token berhasil disimpan di localStorage');
+        return true;
+      } else {
+        console.warn('Window tidak tersedia (server-side rendering)');
+        return false;
+      }
+    } catch (error) {
+      console.error('Gagal menyimpan token:', error);
+      return false;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Validasi input
-    if (loginType === "email" && !formData.alamat_email) {
+    if (loginType === "email" && !formData.email) {
       toast.error("❌ Harap masukkan alamat email");
       setIsLoading(false);
       return;
@@ -76,11 +91,10 @@ export default function LoginForm() {
       return;
     }
 
-    // Siapkan data berdasarkan tipe login
     const requestData =
       loginType === "email"
         ? {
-            alamat_email: formData.alamat_email,
+            email: formData.email,
             password: formData.password,
           }
         : {
@@ -99,13 +113,25 @@ export default function LoginForm() {
 
       const data = await response.json();
 
-      if (response.ok) {
-        toast.success("🎉 Login berhasil! Mengalihkan...");
-        localStorage.setItem("token", data.token);
-        // Redirect ke dashboard setelah 2 detik
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 2000);
+      if (response.ok && data.token) {
+        // Simpan token ke localStorage
+        const tokenSaved = saveTokenToStorage(data.token);
+        
+        if (tokenSaved) {
+          toast.success("🎉 Login berhasil! Token disimpan. Mengalihkan...");
+          
+          // Simpan juga data user jika ada
+          if (data.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+          }
+          
+          // Redirect ke dashboard setelah 2 detik
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 2000);
+        } else {
+          toast.error("⚠️ Login berhasil tetapi gagal menyimpan token");
+        }
       } else {
         toast.error(data.message || "❌ Login gagal");
       }
@@ -159,8 +185,8 @@ export default function LoginForm() {
           {/* Email Input */}
           {loginType === "email" && (
             <EmailInput
-              value={formData.alamat_email}
-              onChange={(value) => handleInputChange("alamat_email", value)}
+              value={formData.email}
+              onChange={(value) => handleInputChange("email", value)}
             />
           )}
 

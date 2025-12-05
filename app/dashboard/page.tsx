@@ -33,6 +33,29 @@ interface Pegawai {
   status?: 'aktif' | 'nonaktif';
 }
 
+// Fungsi helper untuk mendapatkan token dari localStorage
+const getToken = (): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('token');
+  }
+  return null;
+};
+
+// Fungsi helper untuk mendapatkan user dari localStorage
+const getUserFromStorage = (): any => {
+  if (typeof window !== 'undefined') {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        return JSON.parse(userStr);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+  }
+  return null;
+};
+
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,7 +68,22 @@ export default function Dashboard() {
   const fetchPegawaiData = async () => {
     try {
       setIsLoadingPegawai(true);
-      const response = await fetch('http://localhost:3000/api/pegawai');
+      const token = getToken();
+      
+      const response = await fetch('http://10.12.192.203:3001/api/pegawai', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.status === 401) {
+        // Token tidak valid atau expired
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        router.push('/');
+        return;
+      }
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -109,22 +147,39 @@ export default function Dashboard() {
 
   // Auth dan inisialisasi user
   useEffect(() => {
-    if (!isAuthenticated()) {
-      router.push('/');
-      return;
-    }
-
-    const token = localStorage.getItem('token');
+    // Cek apakah user sudah login dengan melihat token di localStorage
+    const token = getToken();
     
     if (!token) {
       router.push('/');
       return;
     }
 
-    try {
-      if (token.split('.').length === 3) {
-        const tokenData = JSON.parse(atob(token.split('.')[1]));
+    // Cek apakah token valid (bisa ditambahkan validasi JWT di sini)
+    // Untuk sekarang, cek format dasar
+    const tokenParts = token.split('.');
+    if (tokenParts.length === 3) {
+      try {
+        const tokenData = JSON.parse(atob(tokenParts[1]));
         setUser(tokenData);
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        // Coba ambil user dari localStorage
+        const savedUser = getUserFromStorage();
+        if (savedUser) {
+          setUser(savedUser);
+        } else {
+          setUser({
+            alamat_email: 'pengguna@bbpmp.com',
+            name: 'Pengguna BBPMP'
+          });
+        }
+      }
+    } else {
+      // Token bukan JWT, coba ambil user dari localStorage
+      const savedUser = getUserFromStorage();
+      if (savedUser) {
+        setUser(savedUser);
       } else {
         try {
           const userData = JSON.parse(token);
@@ -136,17 +191,11 @@ export default function Dashboard() {
           });
         }
       }
-    } catch (error) {
-      console.error('Error decoding token:', error);
-      setUser({
-        alamat_email: 'pengguna@bbpmp.com',
-        name: 'Pengguna BBPMP'
-      });
-    } finally {
-      setIsLoading(false);
     }
 
-    // Fetch data pegawai saat komponen dimuat
+    setIsLoading(false);
+    
+    // Fetch data pegawai setelah user di-set
     fetchPegawaiData();
   }, [router]);
 

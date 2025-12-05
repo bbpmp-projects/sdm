@@ -29,6 +29,14 @@ interface DataPegawaiProps {
   onBack?: () => void;
 }
 
+// Fungsi helper untuk mendapatkan token dari localStorage
+const getToken = (): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('token');
+  }
+  return null;
+};
+
 export default function DataPegawai({ onBack }: DataPegawaiProps) {
   const [pegawaiList, setPegawaiList] = useState<Pegawai[]>([]);
   const [filteredPegawai, setFilteredPegawai] = useState<Pegawai[]>([]);
@@ -52,7 +60,30 @@ export default function DataPegawai({ onBack }: DataPegawaiProps) {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch('http://localhost:3000/api/pegawai');
+      const token = getToken();
+      
+      if (!token) {
+        setError('Token autentikasi tidak ditemukan. Silakan login kembali.');
+        setIsLoading(false);
+        return;
+      }
+      
+      const response = await fetch('http://10.12.192.203:3001/api/pegawai', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.status === 401) {
+        setError('Sesi telah berakhir. Silakan login kembali.');
+        // Optional: Clear token and redirect
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+        return;
+      }
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -102,7 +133,7 @@ export default function DataPegawai({ onBack }: DataPegawaiProps) {
       
     } catch (error) {
       console.error('Error fetching pegawai:', error);
-      setError('Gagal mengambil data dari server. Pastikan API berjalan di http://localhost:3000');
+      setError('Gagal mengambil data dari server. Pastikan API berjalan di http://10.12.192.203:3001/api/pegawai');
       
       // Kosongkan data jika API tidak tersedia
       setPegawaiList([]);
@@ -114,6 +145,7 @@ export default function DataPegawai({ onBack }: DataPegawaiProps) {
     }
   }, []);
 
+  // ... (sisa kode tetap sama, tidak perlu diubah)
   // Filter berdasarkan pencarian
   const applySearchFilter = useCallback(() => {
     let result = [...pegawaiList];
@@ -225,6 +257,18 @@ export default function DataPegawai({ onBack }: DataPegawaiProps) {
           {error && (
             <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-700 text-sm">{error}</p>
+              {error.includes('Sesi telah berakhir') && (
+                <button
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      window.location.href = '/';
+                    }
+                  }}
+                  className="mt-2 px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700"
+                >
+                  Login Kembali
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -315,7 +359,7 @@ export default function DataPegawai({ onBack }: DataPegawaiProps) {
           <div className="text-center">
             <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
             <p className="text-gray-600 font-medium">Memuat data pegawai...</p>
-            <p className="text-sm text-gray-500 mt-2">Mengambil data dari http://localhost:3000/api/pegawai</p>
+            <p className="text-sm text-gray-500 mt-2">Mengambil data dari http://10.12.192.203:3001/api/pegawai</p>
           </div>
         </div>
       ) : (
@@ -396,11 +440,7 @@ export default function DataPegawai({ onBack }: DataPegawaiProps) {
                           <div>
                             <div className="text-sm text-gray-900">{pegawai.jabatan}</div>
                             {pegawai.status && (
-                              <div className={`inline-block px-2 py-1 text-xs rounded-full mt-1 ${
-                                pegawai.status === 'aktif' 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-red-100 text-red-800'
-                              }`}>
+                              <div className={`inline-block px-2 py-1 text-xs rounded-full mt-1 ${pegawai.status === 'aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                 {pegawai.status === 'aktif' ? 'Aktif' : 'Nonaktif'}
                               </div>
                             )}

@@ -101,3 +101,31 @@ input:focus, button:focus {
 .animate-pulse-slow {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Font Times New Roman untuk surat */
+.surat-times-new-roman {
+  font-family: 'Times New Roman', Times, serif !important;
+}
+
+.kop-surat-times {
+  font-family: 'Times New Roman', Times, serif !important;
+  line-height: 1.2 !important;
+}
+
+.kop-surat-header-times {
+  font-family: 'Times New Roman', Times, serif !important;
+  font-size: 13px !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.1 !important;
+}
+
+.kop-surat-detail-times {
+  font-family: 'Times New Roman', Times, serif !important;
+  font-size: 11px !important;
+  margin: 1px 0 !important;
+  padding: 0 !important;
+  line-height: 1.2 !important;
+}

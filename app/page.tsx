@@ -11,14 +11,37 @@ import BackgroundElements from "./components/UILoginForm/BackgroundElements";
 
 export default function Login() {
   const router = useRouter();
+  const [isChecking, setIsChecking] = useState(true);
 
-  // Redirect jika sudah login
+  // Cek token dengan useEffect
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      router.push('/dashboard');
-    }
+    const checkAuth = () => {
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('token');
+        if (token) {
+          // Optional: Validasi token di sini
+          router.push('/dashboard');
+        } else {
+          setIsChecking(false);
+        }
+      } else {
+        setIsChecking(false);
+      }
+    };
+
+    checkAuth();
   }, [router]);
+
+  if (isChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Memeriksa autentikasi...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
